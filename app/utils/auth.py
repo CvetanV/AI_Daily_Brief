@@ -124,7 +124,8 @@ def login_form():
                 st.session_state["authenticated"] = True
                 st.session_state["username"] = username
                 st.success("Logged in")
-                _rerun()
+                # Continue in the same request so the app renders after login
+                return
             else:
                 st.error("Invalid username or password")
 
@@ -160,7 +161,8 @@ def require_login():
                         st.session_state["authenticated"] = True
                         st.session_state["username"] = "app_user"
                         st.success("Authenticated")
-                        _rerun()
+                        # Continue in the same request so the app renders after login
+                        return
                     else:
                         st.error("Invalid password")
             st.stop()
