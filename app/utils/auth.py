@@ -30,14 +30,15 @@ def _rerun():
     except Exception:
         pass
 
-    if RerunException is not None:
-        raise RerunException("requesting rerun")
-
-    # Fallback: nudge the page to reload by clearing query params and stopping
+    # Fallback: nudge the page to reload by setting a unique query param
+    # (avoids raising RerunException with an unexpected payload).
     try:
-        st.experimental_set_query_params()
+        st.experimental_set_query_params(_reload=str(uuid.uuid4()))
     except Exception:
-        pass
+        try:
+            st.experimental_set_query_params()
+        except Exception:
+            pass
     st.stop()
 
 # Default auth mode: 'local' uses per-user credentials, 'simple' uses APP_PASSWORD,
