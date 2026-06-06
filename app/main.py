@@ -37,6 +37,13 @@ except Exception:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     from app.utils import auth
 
+# Handle OAuth callback if present (must run before require_login)
+try:
+    auth.handle_oauth_callback()
+except Exception:
+    # Non-fatal: continue to normal login flow
+    pass
+
 auth.require_login()
 
 # App Navigation
