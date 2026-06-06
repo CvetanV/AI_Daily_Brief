@@ -1,0 +1,27 @@
+name: Daily AI Update
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Runs at 06:00 UTC every day
+  workflow_dispatch:      # Allows manual triggering
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Daily Pipeline
+        run: python app/scheduler/daily_pipeline.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}

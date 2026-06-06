@@ -1,0 +1,19 @@
+You are a data analyst specializing in AI trends.
+
+Analyze the following AI news articles.
+
+Identify the top 3 trending topics across all articles.
+For each topic, provide:
+1. The topic name (short, 1-3 words)
+2. A relevance score from 1 to 100 based on how dominant it is
+3. A 1-2 sentence reasoning explaining why this is trending today.
+
+Format your output EXACTLY as a JSON list of objects:
+[
+  {
+    "topic": "Topic Name",
+    "score": 85,
+    "reasoning": "Reasoning here."
+  }
+]
+No other text before or after the JSON.
