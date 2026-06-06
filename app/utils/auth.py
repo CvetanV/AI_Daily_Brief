@@ -8,6 +8,38 @@ from urllib.parse import urlencode
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+try:
+    # Newer Streamlit exposes RerunException for programmatic reruns
+    from streamlit.runtime.scriptrunner.script_runner import RerunException
+except Exception:
+    RerunException = None
+
+
+def _rerun():
+    """Attempt to programmatically rerun the Streamlit script in a compatible way.
+
+    Tries `st.experimental_rerun()` first; if unavailable, raises Streamlit's
+    `RerunException`. If neither is possible, falls back to setting a query
+    param and stopping to force a reload on next request.
+    """
+    try:
+        # Preferred when available
+        rerun = getattr(st, "experimental_rerun", None)
+        if callable(rerun):
+            return rerun()
+    except Exception:
+        pass
+
+    if RerunException is not None:
+        raise RerunException("requesting rerun")
+
+    # Fallback: nudge the page to reload by clearing query params and stopping
+    try:
+        st.experimental_set_query_params()
+    except Exception:
+        pass
+    st.stop()
+
 # Default auth mode: 'local' uses per-user credentials, 'simple' uses APP_PASSWORD,
 # 'oauth' can be used when OAuth config is present. Environment/secrets override.
 DEFAULT_AUTH_MODE = "local"
@@ -91,7 +123,7 @@ def login_form():
                 st.session_state["authenticated"] = True
                 st.session_state["username"] = username
                 st.success("Logged in")
-                st.experimental_rerun()
+                _rerun()
             else:
                 st.error("Invalid username or password")
 
@@ -105,7 +137,7 @@ def login_form():
 def logout():
     st.session_state["authenticated"] = False
     st.session_state["username"] = None
-    st.experimental_rerun()
+    _rerun()
 
 
 def require_login():
@@ -127,7 +159,7 @@ def require_login():
                         st.session_state["authenticated"] = True
                         st.session_state["username"] = "app_user"
                         st.success("Authenticated")
-                        st.experimental_rerun()
+                        _rerun()
                     else:
                         st.error("Invalid password")
             st.stop()
@@ -231,8 +263,11 @@ def handle_oauth_callback():
         st.session_state["username"] = email or name
 
         # Clear query params to avoid re-running callback
-        st.experimental_set_query_params()
-        st.experimental_rerun()
+        try:
+            st.experimental_set_query_params()
+        except Exception:
+            pass
+        _rerun()
 
     except Exception as e:
         st.error(f"OAuth callback error: {e}")
