@@ -6,6 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from app.database.connection import SessionLocal
 from app.database.models import Article
+from app.services.rss_service import TOPIC_DISPLAY_NAMES
 
 st.title("📰 News Explorer")
 
@@ -19,9 +20,11 @@ try:
         sources = [s[0] for s in db.query(Article.source).distinct().all()]
         selected_sources = st.multiselect("Filter by Source:", sources, default=sources)
         
-        # Get unique categories
+        # Get unique categories and show pretty display names
         categories = [c[0] for c in db.query(Article.category).distinct().all() if c[0]]
-        selected_categories = st.multiselect("Filter by Category:", categories, default=categories)
+        category_labels = {TOPIC_DISPLAY_NAMES.get(c, c): c for c in categories}
+        selected_labels = st.multiselect("Filter by Category:", list(category_labels.keys()), default=list(category_labels.keys()))
+        selected_categories = [category_labels[l] for l in selected_labels]
 
     # Build query
     query = db.query(Article)
@@ -46,7 +49,7 @@ try:
             with col1:
                 st.caption(f"**Source:** {a.source}")
             with col2:
-                st.caption(f"**Category:** {a.category}")
+                st.caption(f"**Category:** {TOPIC_DISPLAY_NAMES.get(a.category, a.category)}")
             with col3:
                 st.caption(f"**Published:** {a.published_at.strftime('%Y-%m-%d %H:%M') if a.published_at else 'Unknown'}")
             

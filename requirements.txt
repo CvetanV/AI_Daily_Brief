@@ -11,3 +11,6 @@ requests>=2.31.0
 schedule>=1.2.1
 pydantic>=2.6.3
 gTTS>=2.5.1
+
+# Authentication helpers
+passlib[bcrypt]>=1.7.4

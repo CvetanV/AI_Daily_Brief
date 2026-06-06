@@ -28,6 +28,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Require authentication before showing navigation
+try:
+    # Prefer package import (works when running from project root)
+    from app.utils import auth
+except Exception:
+    import sys, os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from app.utils import auth
+
+auth.require_login()
+
 # App Navigation
 pg = st.navigation([
     st.Page("dashboard/home.py", title="Home", icon="🏠"),

@@ -10,9 +10,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from app.database.connection import SessionLocal
 from app.database.models import Summary, Trend, Article
 from app.services.summarizer_service import generate_topic_briefing, save_daily_script
-from app.services.rss_service import TOPIC_SOURCES
+from app.services.rss_service import TOPIC_SOURCES, TOPIC_DISPLAY_NAMES
 
-# All 5 topics in defined order
+# All 5 topics in defined order (DB keys)
 ALL_TOPICS = list(TOPIC_SOURCES.keys())
 
 st.title("🏠 AI Daily Brief")
@@ -32,7 +32,8 @@ try:
     st.header(f"Today's Briefings — {today.strftime('%B %d, %Y')}")
 
     # Create one tab per topic
-    tabs = st.tabs(ALL_TOPICS)
+    tab_labels = [TOPIC_DISPLAY_NAMES.get(t, t) for t in ALL_TOPICS]
+    tabs = st.tabs(tab_labels)
 
     for i, topic_name in enumerate(ALL_TOPICS):
         with tabs[i]:
@@ -44,14 +45,15 @@ try:
 
             if summary:
                 with st.container(border=True):
-                    st.markdown(f"🔊 **Listen to today's {topic_name} briefing:**")
+                    display = TOPIC_DISPLAY_NAMES.get(topic_name, topic_name)
+                    st.markdown(f"🔊 **Listen to today's {display} briefing:**")
                     with st.spinner("Preparing audio..."):
                         audio_bytes = generate_audio_summary(summary.content)
                     st.audio(audio_bytes, format='audio/mp3')
                     st.divider()
                     st.markdown(summary.content)
             else:
-                st.info(f"No briefing available yet for **{topic_name}** today.")
+                st.info(f"No briefing available yet for **{TOPIC_DISPLAY_NAMES.get(topic_name, topic_name)}** today.")
 
                 if st.button(f"🔄 Generate Now", key=f"gen_{topic_name}"):
                     # Fetch today's articles for just this topic (max 10)

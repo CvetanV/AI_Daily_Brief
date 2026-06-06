@@ -4,6 +4,7 @@ from email.utils import parsedate_to_datetime
 import urllib.parse
 
 # Mapping of Topics to their respective RSS sources
+# Keys are stored as-is in the DB (category field) — do NOT rename them.
 TOPIC_SOURCES = {
     "Data engineering and archtiecture": [
         "https://news.google.com/rss/search?q=Data+Engineering+OR+Data+Architecture&hl=en-US&gl=US&ceid=US:en"
@@ -24,6 +25,16 @@ TOPIC_SOURCES = {
     "Research and science news": [
         "https://news.google.com/rss/search?q=Research+OR+Science+News+OR+Scientific+Discovery&hl=en-US&gl=US&ceid=US:en"
     ]
+}
+
+# Short, human-readable labels for the UI.
+# Maps internal DB category key → display name shown in tabs/filters.
+TOPIC_DISPLAY_NAMES = {
+    "Data engineering and archtiecture": "🏗️ Data & Architecture",
+    "Cloud engineering and archtiecture": "☁️ Cloud & Infrastructure",
+    "AI AI Adoption Gen AI and agentic AI": "🤖 AI & GenAI",
+    "Global news including wars economical and financial news weather events and EU regulations impacting cloud data and AI": "🌍 Global News & EU Policy",
+    "Research and science news": "🔬 Research & Science",
 }
 
 def parse_date(date_string):
