@@ -8,30 +8,20 @@ from urllib.parse import urlencode
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-try:
-    # Newer Streamlit exposes RerunException for programmatic reruns
-    from streamlit.runtime.scriptrunner.script_runner import RerunException
-except Exception:
-    RerunException = None
-
 
 def _rerun():
-    """Attempt to programmatically rerun the Streamlit script in a compatible way.
+    """Safely request a rerun across Streamlit versions by nudging a query param.
 
-    Tries `st.experimental_rerun()` first; if unavailable, raises Streamlit's
-    `RerunException`. If neither is possible, falls back to setting a query
-    param and stopping to force a reload on next request.
+    We avoid raising internal exceptions directly; instead set a unique
+    query param and stop, which forces the client to reload the app state.
     """
     try:
-        # Preferred when available
         rerun = getattr(st, "experimental_rerun", None)
         if callable(rerun):
             return rerun()
     except Exception:
         pass
 
-    # Fallback: nudge the page to reload by setting a unique query param
-    # (avoids raising RerunException with an unexpected payload).
     try:
         st.experimental_set_query_params(_reload=str(uuid.uuid4()))
     except Exception:
@@ -41,9 +31,9 @@ def _rerun():
             pass
     st.stop()
 
-# Default auth mode: 'local' uses per-user credentials, 'simple' uses APP_PASSWORD,
-# 'oauth' can be used when OAuth config is present. Environment/secrets override.
-DEFAULT_AUTH_MODE = "local"
+
+# Default auth mode
+DEFAULT_AUTH_MODE = "local"  # options: simple, local, oauth
 
 
 def get_auth_mode() -> str:
@@ -65,20 +55,10 @@ def get_app_password() -> typing.Optional[str]:
 
 
 def hash_password(password: str) -> str:
-    """Hash a plaintext password for storage (use offline to create secrets)."""
     return pwd_context.hash(password)
 
 
 def _get_users() -> dict:
-    """Read user credentials from Streamlit secrets under `credentials.users`.
-
-    Expected structure in `st.secrets`:
-    credentials:
-      users:
-        alice:
-          name: "Alice"
-          password: "$2b$..."
-    """
     try:
         if "credentials" in st.secrets and "users" in st.secrets["credentials"]:
             return st.secrets["credentials"]["users"]
@@ -108,32 +88,36 @@ def _ensure_session():
 
 
 def login_form():
+    """Render the login controls in the sidebar. Hidden when authenticated."""
     _ensure_session()
 
-    # If simple mode is active, skip the per-user login form
+    # Simple mode doesn't use per-user login form; show OAuth link if present
     if get_auth_mode() == "simple":
+        oauth_client = _get_oauth_config()
+        if oauth_client and oauth_client.get("client_id"):
+            auth_url = build_google_auth_url(oauth_client)
+            st.sidebar.markdown(f"[Sign in with Google]({auth_url})")
         return
 
-    with st.form("login_form"):
-        st.write("Please sign in to continue")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
+    # Sidebar per-user login
+    with st.sidebar.form("login_form"):
+        st.sidebar.write("Please sign in to continue")
+        username = st.sidebar.text_input("Username")
+        password = st.sidebar.text_input("Password", type="password")
+        submitted = st.sidebar.form_submit_button("Login")
         if submitted:
             if verify_credentials(username, password):
                 st.session_state["authenticated"] = True
                 st.session_state["username"] = username
-                st.success("Logged in")
-                # Continue in the same request so the app renders after login
+                st.sidebar.success("Logged in")
                 return
             else:
-                st.error("Invalid username or password")
+                st.sidebar.error("Invalid username or password")
 
-    # Offer Google OAuth if configured
     oauth_client = _get_oauth_config()
     if oauth_client and oauth_client.get("client_id"):
         auth_url = build_google_auth_url(oauth_client)
-        st.markdown(f"[Sign in with Google]({auth_url})")
+        st.sidebar.markdown(f"[Sign in with Google]({auth_url})")
 
 
 def logout():
@@ -143,31 +127,30 @@ def logout():
 
 
 def require_login():
+    """Enforce authentication. When not authenticated, show sidebar login and stop."""
     _ensure_session()
     mode = get_auth_mode()
 
-    # Simple app password mode
     if mode == "simple":
         if not st.session_state.get("authenticated"):
-            with st.form("simple_login_form"):
-                st.write("Enter application password to continue")
-                pwd = st.text_input("Password", type="password")
-                submitted = st.form_submit_button("Enter")
+            with st.sidebar.form("simple_login_form"):
+                st.sidebar.write("Enter application password to continue")
+                pwd = st.sidebar.text_input("Password", type="password")
+                submitted = st.sidebar.form_submit_button("Enter")
                 if submitted:
                     app_pwd = get_app_password()
                     if not app_pwd:
-                        st.error("APP_PASSWORD is not configured in secrets or environment.")
+                        st.sidebar.error("APP_PASSWORD is not configured in secrets or environment.")
                     elif pwd == app_pwd:
                         st.session_state["authenticated"] = True
                         st.session_state["username"] = "app_user"
-                        st.success("Authenticated")
-                        # Continue in the same request so the app renders after login
+                        st.sidebar.success("Authenticated")
                         return
                     else:
-                        st.error("Invalid password")
+                        st.sidebar.error("Invalid password")
             st.stop()
 
-    # Default/local mode: show login form (and OAuth if configured)
+    # Default/local mode: show sidebar login (or OAuth) and stop
     if not st.session_state.get("authenticated"):
         login_form()
         st.stop()
@@ -178,7 +161,6 @@ def get_current_user() -> typing.Optional[str]:
 
 
 def _get_oauth_config():
-    """Return OAuth client config from Streamlit secrets or environment."""
     try:
         if "oauth" in st.secrets:
             cfg = st.secrets["oauth"]
@@ -213,11 +195,6 @@ def build_google_auth_url(cfg: dict) -> str:
 
 
 def handle_oauth_callback():
-    """Check current URL for OAuth callback params and perform token exchange.
-
-    Call this early in your app (before require_login) so the callback can finish
-    the sign-in flow and set `st.session_state['authenticated']`.
-    """
     params = {}
     try:
         params = st.experimental_get_query_params()
@@ -252,7 +229,6 @@ def handle_oauth_callback():
             st.error("Failed to obtain access token from provider")
             return
 
-        # Fetch user info
         userinfo = requests.get(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             headers={"Authorization": f"Bearer {access_token}"},
@@ -265,7 +241,6 @@ def handle_oauth_callback():
         st.session_state["authenticated"] = True
         st.session_state["username"] = email or name
 
-        # Clear query params to avoid re-running callback
         try:
             st.experimental_set_query_params()
         except Exception:
@@ -275,4 +250,3 @@ def handle_oauth_callback():
     except Exception as e:
         st.error(f"OAuth callback error: {e}")
         return
-
