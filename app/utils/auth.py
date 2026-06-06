@@ -133,21 +133,19 @@ def require_login():
 
     if mode == "simple":
         if not st.session_state.get("authenticated"):
-            with st.sidebar.form("simple_login_form"):
-                st.sidebar.write("Enter application password to continue")
-                pwd = st.sidebar.text_input("Password", type="password")
-                submitted = st.sidebar.form_submit_button("Enter")
-                if submitted:
-                    app_pwd = get_app_password()
-                    if not app_pwd:
-                        st.sidebar.error("APP_PASSWORD is not configured in secrets or environment.")
-                    elif pwd == app_pwd:
-                        st.session_state["authenticated"] = True
-                        st.session_state["username"] = "app_user"
-                        st.sidebar.success("Authenticated")
-                        return
-                    else:
-                        st.sidebar.error("Invalid password")
+            st.sidebar.write("Enter application password to continue")
+            pwd = st.sidebar.text_input("Password", type="password", key="_simple_pwd")
+            if st.sidebar.button("Enter", key="_simple_enter"):
+                app_pwd = get_app_password()
+                if not app_pwd:
+                    st.sidebar.error("APP_PASSWORD is not configured in secrets or environment.")
+                elif pwd == app_pwd:
+                    st.session_state["authenticated"] = True
+                    st.session_state["username"] = "app_user"
+                    st.sidebar.success("Authenticated")
+                    return
+                else:
+                    st.sidebar.error("Invalid password")
             st.stop()
 
     # Default/local mode: show sidebar login (or OAuth) and stop
