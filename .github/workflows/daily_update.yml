@@ -2,7 +2,7 @@ name: Daily AI Update
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Runs at 06:00 UTC every day
+    - cron: '0 4 * * *'  # Runs at 06:00 UTC every day
   workflow_dispatch:      # Allows manual triggering
 
 jobs:
