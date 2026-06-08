@@ -1,4 +1,4 @@
-name: Daily AI Update
+name: Daily AI Update External Trigger
 
 on:
   repository_dispatch:
