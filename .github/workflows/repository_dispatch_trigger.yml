@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "Event name: ${{ github.event_name }}"
           echo "Action: ${{ github.event.action }}"
-          echo "Client payload: ${{ toJson(github.event.client_payload)"   
+          echo "Client payload: ${{ toJson(github.event.client_payload) }}"   
 
       - name: Set up Python
         uses: actions/setup-python@v5
