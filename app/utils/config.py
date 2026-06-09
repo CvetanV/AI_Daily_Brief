@@ -47,3 +47,24 @@ def get_gemini_model() -> str:
 DATABASE_URL = get_database_url()
 GOOGLE_API_KEY = get_gemini_api_key()
 GEMINI_MODEL = get_gemini_model()
+
+AVAILABLE_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash",
+    "gemma-4-26b",
+    "gemma-4-31b",
+    "gemini-2.5-flash-tts"
+]
+
+_active_model = None
+
+def get_active_model() -> str:
+    global _active_model
+    return _active_model or GEMINI_MODEL
+
+def set_active_model(model_name: str):
+    global _active_model
+    _active_model = model_name

@@ -29,7 +29,21 @@ def generate_audio_summary(text: str):
 db = SessionLocal()
 try:
     today = date.today()
-    st.header(f"Today's Briefings — {today.strftime('%B %d, %Y')}")
+    
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.header(f"Today's Briefings — {today.strftime('%B %d, %Y')}")
+    with col2:
+        from app.utils.config import GEMINI_MODEL, AVAILABLE_MODELS
+        available_models = list(AVAILABLE_MODELS)
+        if GEMINI_MODEL not in available_models:
+            available_models.insert(0, GEMINI_MODEL)
+        selected_model = st.selectbox(
+            "🤖 Model for generation / fallback start",
+            options=available_models,
+            index=available_models.index(GEMINI_MODEL) if GEMINI_MODEL in available_models else 0,
+            help="Choose the starting model for manual generation. If it encounters a quota limit or transient error, the system will fall back to other models automatically."
+        )
 
     # Create one tab per topic
     tab_labels = [TOPIC_DISPLAY_NAMES.get(t, t) for t in ALL_TOPICS]
@@ -64,21 +78,21 @@ try:
 
                     if not topic_articles:
                         st.error(
-                            f"No articles were fetched for **{topic_name}** today. "
-                            "Please run the ingestion pipeline first."
+                             f"No articles were fetched for **{topic_name}** today. "
+                             "Please run the ingestion pipeline first."
                         )
                     else:
                         with st.spinner(
-                            f"Calling Gemini once to clean, rank, and generate the **{topic_name}** briefing..."
+                            f"Calling Gemini ({selected_model}) once to clean, rank, and generate the **{topic_name}** briefing..."
                         ):
-                            script = generate_topic_briefing(topic_name, topic_articles)
+                            script = generate_topic_briefing(topic_name, topic_articles, model=selected_model)
 
                         if script:
                             save_daily_script(db, script, topic_name)
                             st.success("Briefing generated! Reloading...")
                             st.rerun()
                         else:
-                            st.error("Gemini returned an empty response. Please try again.")
+                            st.error("Gemini returned an empty response or all fallback models failed. Please try again.")
 
     st.divider()
 
