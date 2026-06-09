@@ -34,7 +34,20 @@ try:
     with col1:
         st.header(f"Today's Briefings — {today.strftime('%B %d, %Y')}")
     with col2:
-        from app.utils.config import GEMINI_MODEL, AVAILABLE_MODELS
+        try:
+            from app.utils.config import GEMINI_MODEL, AVAILABLE_MODELS
+        except ImportError:
+            from app.utils.config import GEMINI_MODEL
+            AVAILABLE_MODELS = [
+                "gemini-2.5-flash",
+                "gemini-3.5-flash",
+                "gemini-3.5-flash-lite",
+                "gemini-2.5-flash-lite",
+                "gemini-3-flash",
+                "gemma-4-26b",
+                "gemma-4-31b",
+                "gemini-2.5-flash-tts"
+            ]
         available_models = list(AVAILABLE_MODELS)
         if GEMINI_MODEL not in available_models:
             available_models.insert(0, GEMINI_MODEL)

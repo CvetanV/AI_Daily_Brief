@@ -5,7 +5,27 @@ from google.genai import types
 from datetime import date
 from sqlalchemy.orm import Session
 from app.database.models import Trend, Article
-from app.utils.config import GOOGLE_API_KEY, GEMINI_MODEL, AVAILABLE_MODELS, get_active_model, set_active_model
+try:
+    from app.utils.config import GOOGLE_API_KEY, GEMINI_MODEL, AVAILABLE_MODELS, get_active_model, set_active_model
+except ImportError:
+    from app.utils.config import GOOGLE_API_KEY, GEMINI_MODEL
+    AVAILABLE_MODELS = [
+        "gemini-2.5-flash",
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-2.5-flash-lite",
+        "gemini-3-flash",
+        "gemma-4-26b",
+        "gemma-4-31b",
+        "gemini-2.5-flash-tts"
+    ]
+    _active_model = None
+    def get_active_model() -> str:
+        global _active_model
+        return _active_model or GEMINI_MODEL
+    def set_active_model(model_name: str):
+        global _active_model
+        _active_model = model_name
 from app.utils.gemini_retry import call_with_retry
 
 def get_trend_prompt():
