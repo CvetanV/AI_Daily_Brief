@@ -1,8 +1,6 @@
 name: Daily AI Update
 
 on:
-  schedule:
-    - cron: '7 7 * * *'   # 04:07 UTC = 06:07 Brussels in summer (CEST)
   workflow_dispatch:
 
 jobs:
