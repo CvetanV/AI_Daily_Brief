@@ -87,6 +87,18 @@ def fetch_rss_feeds():
         for url in urls:
             try:
                 feed = feedparser.parse(url)
+                
+                # Check for HTTP status errors (e.g. 404, 500, etc.)
+                if hasattr(feed, 'status') and feed.status >= 400:
+                    print(f"Warning: Failed to fetch RSS from {url} for topic '{topic}' (HTTP status {feed.status})")
+                    continue
+                
+                # Check for connection/parsing errors (only if no entries could be recovered)
+                if feed.bozo and not feed.entries:
+                    exc = feed.get('bozo_exception')
+                    print(f"Warning: Failed to parse RSS from {url} for topic '{topic}' (Exception: {exc})")
+                    continue
+
                 source_title = feed.feed.title if hasattr(feed.feed, 'title') else url
                 
                 for entry in feed.entries:
