@@ -7,23 +7,56 @@ import urllib.parse
 # Keys are stored as-is in the DB (category field) — do NOT rename them.
 TOPIC_SOURCES = {
     "Data engineering and archtiecture": [
-        "https://news.google.com/rss/search?q=Data+Engineering+OR+Data+Architecture&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/search?q=Data+Engineering+OR+Data+Architecture&hl=en-US&gl=US&ceid=US:en",
+        "https://www.dataengineeringweekly.com/feed",
+        "https://startdataengineering.com/rss/",
+        "https://towardsdatascience.com/feed",
+        "https://aws.amazon.com/blogs/big-data/feed/",
+        "https://databricks.com/blog/feed.xml"
     ],
     "Cloud engineering and archtiecture": [
-        "https://news.google.com/rss/search?q=Cloud+Engineering+OR+Cloud+Architecture+OR+AWS+OR+Azure+OR+GCP&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/search?q=Cloud+Engineering+OR+Cloud+Architecture+OR+AWS+OR+Azure+OR+GCP&hl=en-US&gl=US&ceid=US:en",
+        "https://cloudcomputing-news.net/feed/",
+        "https://techrepublic.com/rssfeeds/topic/cloud",
+        "https://www.crn.com/news/cloud/rss.xml",
+        "https://aws.amazon.com/blogs/aws/feed/",
+        "https://azure.microsoft.com/en-us/blog/feed/",
+        "https://cloud.google.com/blog/rss/",
+        "https://blog.cloudflare.com/rss/"
     ],
     "AI AI Adoption Gen AI and agentic AI": [
         "https://openai.com/news/rss.xml",
         "https://www.anthropic.com/news/rss",
         "https://hnrss.org/frontpage",
         "https://www.reddit.com/r/LocalLLaMA/.rss",
-        "https://news.google.com/rss/search?q=Generative+AI+OR+Agentic+AI+OR+AI+Adoption&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/search?q=Generative+AI+OR+Agentic+AI+OR+AI+Adoption&hl=en-US&gl=US&ceid=US:en",
+        "https://www.marktechpost.com/feed/",
+        "https://artificialintelligence-news.com/feed/",
+        "https://aiweekly.co/issues.rss",
+        "https://theaiinsider.tech/feed",
+        "https://newsletter.genai.works/feed",
+        "https://importai.net/rss.xml",
+        "https://www.lastweekin.ai/feed",
+        "https://blogs.microsoft.com/ai/feed/",
+        "https://huggingface.co/blog/feed.xml",
+        "https://ai.googleblog.com/feeds/posts/default",
+        "https://www.producthunt.com/feed"
     ],
     "Global news including wars economical and financial news weather events and EU regulations impacting cloud data and AI": [
-        "https://news.google.com/rss/search?q=Global+News+OR+Economy+OR+War+OR+Weather+OR+EU+Regulations&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/search?q=Global+News+OR+Economy+OR+War+OR+Weather+OR+EU+Regulations&hl=en-US&gl=US&ceid=US:en",
+        "https://www.theverge.com/rss/index.xml",
+        "https://feeds.arstechnica.com/arstechnica/index/",
+        "https://techcrunch.com/feed/",
+        "https://www.aljazeera.com/xml/rss/all.xml",
+        "https://feeds.skynews.com/feeds/rss/world.xml",
+        "https://www.france24.com/en/rss",
+        "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+        "https://world.einnews.com/all_rss"
     ],
     "Research and science news": [
-        "https://news.google.com/rss/search?q=Research+OR+Science+News+OR+Scientific+Discovery&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/search?q=Research+OR+Science+News+OR+Scientific+Discovery&hl=en-US&gl=US&ceid=US:en",
+        "https://rss.arxiv.org/rss/cs.AI",
+        "https://news.mit.edu/rss/topic/artificial-intelligence"
     ]
 }
 
